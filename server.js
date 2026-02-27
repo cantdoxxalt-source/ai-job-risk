@@ -201,42 +201,134 @@ function generateFallbackAnalysis(profileData) {
   const about = (profileData.about || '').toLowerCase();
   const allText = `${headline} ${experience} ${about}`;
   
-  // Keyword-based risk scoring
-  const highRiskKeywords = ['data entry', 'customer service', 'translator', 'bookkeeper', 'paralegal', 'administrative', 'clerk'];
-  const medRiskKeywords = ['analyst', 'marketing', 'content writer', 'copywriter', 'researcher', 'assistant'];
-  const lowRiskKeywords = ['executive', 'ceo', 'doctor', 'nurse', 'surgeon', 'electrician', 'plumber', 'therapist', 'psychologist'];
-  
-  let riskScore = 50;
-  
-  if (highRiskKeywords.some(kw => allText.includes(kw))) riskScore = 80;
-  else if (medRiskKeywords.some(kw => allText.includes(kw))) riskScore = 60;
-  else if (lowRiskKeywords.some(kw => allText.includes(kw))) riskScore = 30;
-  
-  const verdicts = {
-    high: "Your job is basically a human API. Start learning to code... or something. 😬",
-    med: "You're in the 'maybe' zone. Update that LinkedIn just in case. 🤔",
-    low: "AI can't do what you do. Yet. Sleep easy. 😎"
+  // Comprehensive keyword-based risk scoring
+  const riskProfiles = {
+    high: {
+      keywords: [
+        'data entry', 'customer service', 'translator', 'interpreter', 'bookkeeper', 
+        'accounting clerk', 'paralegal', 'legal assistant', 'administrative assistant',
+        'receptionist', 'telemarketer', 'proofreader', 'transcriptionist', 'data analyst',
+        'market research', 'content moderator', 'basic coding', 'junior developer',
+        'qa tester', 'technical support', 'help desk', 'call center', 'claims processor'
+      ],
+      score: 85,
+      verdict: "Your job is basically a human API. RIP. 🪦",
+      why: [
+        "Your work is repetitive pattern-matching that AI crushes",
+        "Clear inputs/outputs = perfect automation target",
+        "You're essentially a biological middleware layer"
+      ],
+      survive: [
+        "Pivot to AI tool management and orchestration",
+        "Develop client relationships that require human trust",
+        "Learn the strategic layer above the tasks you do"
+      ]
+    },
+    medium: {
+      keywords: [
+        'software engineer', 'developer', 'programmer', 'web designer', 'graphic designer',
+        'copywriter', 'content writer', 'marketing manager', 'seo', 'social media',
+        'financial analyst', 'business analyst', 'product manager', 'project manager',
+        'hr manager', 'recruiter', 'sales representative', 'account manager',
+        'journalist', 'editor', 'photographer', 'videographer', 'musician'
+      ],
+      score: 60,
+      verdict: "You're in the danger zone. AI is coming for 40% of your job. 🫣",
+      why: [
+        "AI can already do 60% of your tasks faster",
+        "Your outputs are increasingly AI-generatable",
+        "You're one ChatGPT plugin away from redundancy"
+      ],
+      survive: [
+        "Become the human who edits AI output (for now)",
+        "Focus on creative direction over production",
+        "Build proprietary relationships and domain expertise"
+      ]
+    },
+    low: {
+      keywords: [
+        'ceo', 'founder', 'executive', 'doctor', 'physician', 'surgeon', 'nurse',
+        'therapist', 'psychologist', 'psychiatrist', 'social worker', 'teacher',
+        'professor', 'electrician', 'plumber', 'hvac', 'mechanic', 'carpenter',
+        'chef', 'baker', 'physical therapist', 'occupational therapist', 'dentist',
+        'veterinarian', 'pilates instructor', 'yoga teacher', 'personal trainer',
+        'hair stylist', 'makeup artist', 'tattoo artist', 'emergency responder'
+      ],
+      score: 25,
+      verdict: "AI can't hold hands or fix pipes. You're golden. 😎",
+      why: [
+        "Your work requires physical presence and dexterity",
+        "Human trust and emotional connection are core to your role",
+        "Complex, ambiguous situations need human judgment"
+      ],
+      survive: [
+        "Keep doing what you're doing - you're hard to automate",
+        "Use AI for admin tasks to focus on the human parts",
+        "Stay current, but don't panic about your job"
+      ]
+    },
+    elite: {
+      keywords: [
+        'ai researcher', 'ml engineer', 'ai engineer', 'prompt engineer',
+        'ai ethics', 'robotics engineer', 'chip designer', 'quantum computing'
+      ],
+      score: 10,
+      verdict: "You're literally building the thing that replaces others. King/Queen. 👑",
+      why: [
+        "You're creating the automation, not being automated",
+        "Your skills are in the highest demand in history",
+        "Even if AI improves, someone needs to steer it"
+      ],
+      survive: [
+        "Keep shipping - you're on the right side of history",
+        "Build AI that augments humans, don't just replace them",
+        "Stay paranoid about AGI - it's closer than it looks"
+      ]
+    }
   };
   
-  let level = riskScore >= 70 ? 'high' : riskScore >= 40 ? 'med' : 'low';
+  // Determine risk level
+  let matchedProfile = null;
+  for (const [level, profile] of Object.entries(riskProfiles)) {
+    if (profile.keywords.some(kw => allText.includes(kw))) {
+      matchedProfile = profile;
+      break;
+    }
+  }
+  
+  // Default to medium if no match
+  if (!matchedProfile) {
+    matchedProfile = riskProfiles.medium;
+  }
+  
+  // Add some randomness to avoid identical scores
+  const variance = Math.floor(Math.random() * 10) - 5;
+  const finalScore = Math.max(5, Math.min(95, matchedProfile.score + variance));
   
   return {
-    riskPercentage: riskScore,
-    verdict: verdicts[level],
-    whyAIWillReplace: [
-      'Your work involves repetitive, pattern-based tasks',
-      'Output is primarily digital and text-based',
-      'Clear inputs and outputs make it AI-friendly'
-    ],
-    howToSurvive: [
-      'Develop skills requiring human judgment and empathy',
-      'Learn to orchestrate AI tools rather than compete with them',
-      'Focus on relationship-building and creative strategy'
-    ],
+    riskPercentage: finalScore,
+    verdict: matchedProfile.verdict,
+    whyAIWillReplace: matchedProfile.why,
+    howToSurvive: matchedProfile.survive,
     profileName: profileData.name,
     profileHeadline: profileData.headline,
     fallback: true
   };
+}
+
+// Simple analytics store (in-memory, resets on restart)
+const analytics = {
+  totalAnalyses: 0,
+  riskScores: [],
+  dailyStats: {}
+};
+
+// Track analysis
+function trackAnalysis(riskPercentage) {
+  analytics.totalAnalyses++;
+  analytics.riskScores.push(riskPercentage);
+  const today = new Date().toISOString().split('T')[0];
+  analytics.dailyStats[today] = (analytics.dailyStats[today] || 0) + 1;
 }
 
 // API Routes
@@ -253,6 +345,9 @@ app.post('/api/analyze', async (req, res) => {
     
     // Step 2: Analyze with AI
     const analysis = await analyzeRisk(profileData);
+    
+    // Track analytics
+    trackAnalysis(analysis.riskPercentage);
     
     res.json({
       success: true,
@@ -291,6 +386,10 @@ app.post('/api/analyze-text', async (req, res) => {
   
   try {
     const analysis = await analyzeRisk(profileData);
+    
+    // Track analytics
+    trackAnalysis(analysis.riskPercentage);
+    
     res.json({
       success: true,
       profile: { name, headline: profileData.headline },
@@ -301,8 +400,30 @@ app.post('/api/analyze-text', async (req, res) => {
   }
 });
 
+// Analytics endpoint (basic stats)
+app.get('/api/stats', (req, res) => {
+  const avgRisk = analytics.riskScores.length > 0 
+    ? (analytics.riskScores.reduce((a, b) => a + b, 0) / analytics.riskScores.length).toFixed(1)
+    : 0;
+  
+  const highRiskCount = analytics.riskScores.filter(s => s >= 70).length;
+  const safeCount = analytics.riskScores.filter(s => s < 40).length;
+  
+  res.json({
+    totalAnalyses: analytics.totalAnalyses,
+    averageRisk: avgRisk + '%',
+    highRiskJobs: highRiskCount,
+    safeJobs: safeCount,
+    dailyStats: analytics.dailyStats
+  });
+});
+
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
 });
 
 app.listen(PORT, () => {
