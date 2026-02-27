@@ -4,7 +4,8 @@ const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
-const pdfParse = require('pdf-parse');
+const pdfModule = require('pdf-parse');
+const pdfParse = pdfModule.PDFParse || pdfModule;
 
 const app = express();
 const PORT = process.env.PORT || 3000;
