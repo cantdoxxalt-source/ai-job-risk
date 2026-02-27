@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Will AI Replace You? | Find Out in 10 Seconds</title>
     <meta name="description" content="Paste your LinkedIn profile and get a brutally honest AI job risk analysis. Funny, fast, and slightly terrifying.">
     
@@ -20,158 +20,787 @@
     
     <!-- Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🤖</text></svg>">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .risk-low { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
-        .risk-med { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-        .risk-high { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        @keyframes pulse {
+        
+        :root {
+            --neon-cyan: #00f5ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --neon-red: #ff073a;
+            --dark-bg: #0a0a0f;
+            --panel-bg: rgba(10, 15, 30, 0.9);
+        }
+        
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: var(--dark-bg);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Animated Grid Background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 245, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Scanline Effect */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.3;
+        }
+        
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--neon-cyan);
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .header::before {
+            content: '◢◣ SYSTEM ONLINE ◢◣';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark-bg);
+            padding: 0 20px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--neon-green);
+            letter-spacing: 3px;
+        }
+        
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            line-height: 1.2;
+            margin-bottom: 15px;
+            text-shadow: 
+                0 0 10px var(--neon-cyan),
+                0 0 20px var(--neon-cyan),
+                0 0 40px var(--neon-cyan);
+            animation: flicker 3s infinite alternate;
+        }
+        
+        @keyframes flicker {
             0%, 100% { opacity: 1; }
-            50% { opacity: .7; }
+            50% { opacity: 0.95; }
+            52% { opacity: 0.5; }
+            54% { opacity: 0.95; }
         }
-        .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+        
+        .subtitle {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: clamp(0.8rem, 3vw, 1rem);
+            color: var(--neon-cyan);
+            opacity: 0.8;
+            letter-spacing: 1px;
         }
-        .loader {
-            border: 3px solid rgba(255,255,255,0.3);
+        
+        /* Terminal Panel */
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--neon-cyan);
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 20px;
+            position: relative;
+            box-shadow: 
+                0 0 20px rgba(0, 245, 255, 0.1),
+                inset 0 0 50px rgba(0, 245, 255, 0.02);
+        }
+        
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--neon-cyan), transparent, var(--neon-pink), transparent);
+            border-radius: 4px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+        
+        .panel-dot {
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            border-top: 3px solid white;
-            width: 24px;
-            height: 24px;
+            animation: pulse 2s infinite;
+        }
+        
+        .panel-dot.red { background: var(--neon-red); box-shadow: 0 0 10px var(--neon-red); }
+        .panel-dot.yellow { background: #ffaa00; box-shadow: 0 0 10px #ffaa00; }
+        .panel-dot.green { background: var(--neon-green); box-shadow: 0 0 10px var(--neon-green); }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.9); }
+        }
+        
+        .panel-title {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+        }
+        
+        /* Form Elements */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: var(--neon-cyan);
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        input, textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 4px;
+            padding: 15px;
+            color: #fff;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--neon-cyan);
+            box-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: rgba(0, 245, 255, 0.4);
+        }
+        
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        /* Buttons */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background: rgba(0, 245, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 245, 255, 0.4);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+        
+        .btn-primary {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+        }
+        
+        .btn-primary::before {
+            background: linear-gradient(90deg, transparent, var(--neon-pink), transparent);
+        }
+        
+        .btn-primary:hover {
+            background: rgba(255, 0, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 0, 255, 0.4);
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+        
+        .btn-secondary {
+            border-color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            padding: 14px;
+        }
+        
+        /* Divider */
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 25px 0;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 12px;
+            color: rgba(0, 245, 255, 0.5);
+        }
+        
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--neon-cyan), transparent);
+        }
+        
+        .divider span {
+            padding: 0 15px;
+        }
+        
+        /* Loading State */
+        .loading-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loader {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+        
+        .loader-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        
+        .loader-ring:nth-child(2) {
+            width: 70%;
+            height: 70%;
+            top: 15%;
+            left: 15%;
+            border-top-color: var(--neon-pink);
+            animation: spin 1.5s linear infinite reverse;
+        }
+        
+        .loader-ring:nth-child(3) {
+            width: 40%;
+            height: 40%;
+            top: 30%;
+            left: 30%;
+            border-top-color: var(--neon-green);
+            animation: spin 2s linear infinite;
+        }
+        
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--neon-cyan);
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+        
+        /* Results Section */
+        .results-section {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .risk-card {
+            text-align: center;
+            padding: 40px 20px;
+            margin-bottom: 25px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .risk-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0.1;
+        }
+        
+        .risk-card.high {
+            border: 2px solid var(--neon-red);
+            box-shadow: 0 0 30px rgba(255, 7, 58, 0.3);
+        }
+        
+        .risk-card.high::before {
+            background: var(--neon-red);
+        }
+        
+        .risk-card.medium {
+            border: 2px solid #ffaa00;
+            box-shadow: 0 0 30px rgba(255, 170, 0, 0.3);
+        }
+        
+        .risk-card.medium::before {
+            background: #ffaa00;
+        }
+        
+        .risk-card.low {
+            border: 2px solid var(--neon-green);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.3);
+        }
+        
+        .risk-card.low::before {
+            background: var(--neon-green);
+        }
+        
+        .risk-percentage {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(4rem, 15vw, 7rem);
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px currentColor;
+        }
+        
+        .risk-card.high .risk-percentage { color: var(--neon-red); }
+        .risk-card.medium .risk-percentage { color: #ffaa00; }
+        .risk-card.low .risk-percentage { color: var(--neon-green); }
+        
+        .risk-label {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+        
+        .verdict {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1rem, 4vw, 1.3rem);
+            font-weight: 700;
+            line-height: 1.4;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+        
+        .risk-card.high .verdict { color: var(--neon-red); }
+        .risk-card.medium .verdict { color: #ffaa00; }
+        .risk-card.low .verdict { color: var(--neon-green); }
+        
+        /* Info Panels */
+        .info-panel {
+            margin-bottom: 20px;
+        }
+        
+        .info-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 4px solid var(--neon-cyan);
+            margin-bottom: 0;
+        }
+        
+        .info-header.warning {
+            border-left-color: var(--neon-red);
+        }
+        
+        .info-header.success {
+            border-left-color: var(--neon-green);
+        }
+        
+        .info-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        
+        .info-content {
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        
+        .info-list {
+            list-style: none;
+        }
+        
+        .info-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.1);
+            font-size: 15px;
+            line-height: 1.5;
+        }
+        
+        .info-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .bullet {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .bullet.danger { color: var(--neon-red); }
+        .bullet.success { color: var(--neon-green); }
+        
+        /* Action Buttons */
+        .actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        @media (max-width: 480px) {
+            .actions {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding: 30px 0;
+            text-align: center;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 11px;
+            color: rgba(0, 245, 255, 0.4);
+            letter-spacing: 1px;
+        }
+        
+        .footer::before {
+            content: '═══';
+            display: block;
+            margin-bottom: 15px;
+            letter-spacing: 10px;
+        }
+        
+        /* Hidden */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Glitch Effect for Header */
+        .glitch {
+            position: relative;
+        }
+        
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .glitch::before {
+            animation: glitch-1 2s infinite linear alternate-reverse;
+            color: var(--neon-pink);
+            z-index: -1;
+        }
+        
+        .glitch::after {
+            animation: glitch-2 3s infinite linear alternate-reverse;
+            color: var(--neon-cyan);
+            z-index: -2;
+        }
+        
+        @keyframes glitch-1 {
+            0%, 100% { clip-path: inset(0 0 95% 0); transform: translate(-2px, 0); }
+            20% { clip-path: inset(20% 0 60% 0); transform: translate(2px, 0); }
+            40% { clip-path: inset(40% 0 40% 0); transform: translate(-2px, 0); }
+            60% { clip-path: inset(60% 0 20% 0); transform: translate(2px, 0); }
+            80% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 0); }
+        }
+        
+        @keyframes glitch-2 {
+            0%, 100% { clip-path: inset(95% 0 0 0); transform: translate(2px, 0); }
+            20% { clip-path: inset(60% 0 20% 0); transform: translate(-2px, 0); }
+            40% { clip-path: inset(40% 0 40% 0); transform: translate(2px, 0); }
+            60% { clip-path: inset(20% 0 60% 0); transform: translate(-2px, 0); }
+            80% { clip-path: inset(5% 0 80% 0); transform: translate(2px, 0); }
+        }
+        
+        /* Binary Rain Effect */
+        .binary-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.03;
+            overflow: hidden;
+        }
+        
+        .binary-column {
+            position: absolute;
+            top: -100%;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 14px;
+            color: var(--neon-cyan);
+            animation: rain 10s linear infinite;
+            white-space: pre;
+            line-height: 1.2;
+        }
+        
+        @keyframes rain {
+            to { transform: translateY(200vh); }
         }
     </style>
 </head>
-<body class="gradient-bg min-h-screen text-white">
-    <div class="container mx-auto px-4 py-8 max-w-2xl">
+<body>
+    <!-- Binary Rain Background -->
+    <div class="binary-rain" id="binaryRain"></div>
+    
+    <div class="container">
         <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-5xl md:text-6xl font-black mb-4 tracking-tight">
-                🤖 Will AI<br>Replace You?
-            </h1>
-            <p class="text-xl text-white/80 max-w-lg mx-auto">
-                Paste your LinkedIn URL and find out if your job is safe... or toast.
-            </p>
-        </div>
+        <header class="header">
+            <h1 class="glitch" data-text="WILL AI REPLACE YOU?">WILL AI<br>REPLACE YOU?</h1>
+            <p class="subtitle">>> PASTE LINKEDIN_PROFILE_URL TO_INITIATE_ANALYSIS</p>
+        </header>
 
         <!-- Input Section -->
-        <div id="input-section" class="glass rounded-2xl p-8 mb-8">
-            <div class="space-y-4">
-                <label class="block text-sm font-semibold text-white/90">
-                    Your LinkedIn Profile URL
-                </label>
+        <div id="input-section" class="panel">
+            <div class="panel-header">
+                <span class="panel-dot red"></span>
+                <span class="panel-dot yellow"></span>
+                <span class="panel-dot green"></span>
+                <span class="panel-title">INPUT_TERMINAL_v1.0</span>
+            </div>
+            
+            <div class="input-group">
+                <label>> TARGET_LINKEDIN_URL</label>
                 <input 
                     type="url" 
                     id="linkedinUrl" 
-                    placeholder="https://www.linkedin.com/in/your-profile"
-                    class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    placeholder="https://linkedin.com/in/your-profile"
                 >
-                <button 
-                    onclick="analyzeProfile()"
-                    id="analyzeBtn"
-                    class="w-full py-4 bg-white text-purple-600 font-bold rounded-lg hover:bg-white/90 transition-all transform hover:scale-[1.02] flex items-center justify-center gap-2"
-                >
-                    <span>Analyze My Job Risk</span>
-                </button>
             </div>
-
-            <!-- Divider -->
-            <div class="flex items-center my-6">
-                <div class="flex-1 h-px bg-white/20"></div>
-                <span class="px-4 text-white/60 text-sm">or</span>
-                <div class="flex-1 h-px bg-white/20"></div>
+            
+            <button onclick="analyzeProfile()" class="btn btn-primary">
+                ⚡ INITIATE_SCAN
+            </button>
+            
+            <div class="divider">
+                <span>OR_MANUAL_INPUT</span>
             </div>
-
-            <!-- Manual Input -->
-            <div class="space-y-4">
-                <label class="block text-sm font-semibold text-white/90">
-                    Paste Your Profile Content
-                </label>
+            
+            <div class="input-group">
+                <label>> RAW_PROFILE_DATA</label>
                 <textarea 
                     id="profileText" 
-                    rows="4"
-                    placeholder="Paste your headline, about section, or job descriptions here if LinkedIn URL doesn't work..."
-                    class="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 resize-none"
+                    placeholder="Paste headline, about section, or job descriptions here..."
                 ></textarea>
-                <button 
-                    onclick="analyzeText()"
-                    id="analyzeTextBtn"
-                    class="w-full py-3 bg-white/20 text-white font-semibold rounded-lg hover:bg-white/30 transition-all"
-                >
-                    Analyze Text Instead
-                </button>
             </div>
+            
+            <button onclick="analyzeText()" class="btn btn-secondary">
+                📋 ANALYZE_TEXT
+            </button>
         </div>
 
-        <!-- Loading State -->
-        <div id="loading-section" class="hidden text-center py-12">
-            <div class="loader mx-auto mb-4"></div>
-            <p class="text-lg text-white/80">Analyzing your career survival odds...</p>
-            <p class="text-sm text-white/60 mt-2">Reading between the lines of your LinkedIn</p>
+        <!-- Loading Section -->
+        <div id="loading-section" class="loading-section hidden">
+            <div class="loader">
+                <div class="loader-ring"></div>
+                <div class="loader-ring"></div>
+                <div class="loader-ring"></div>
+            </div>
+            <p class="loading-text">>> ANALYZING CAREER SURVIVAL ODDS...</p>
+            <p style="font-family: 'Share Tech Mono'; font-size: 11px; color: rgba(0,245,255,0.4); margin-top: 10px;">
+                [SCANNING_LINKEDIN_PROFILE] [PATTERN_MATCHING] [CALCULATING_RISK]
+            </p>
         </div>
 
         <!-- Results Section -->
-        <div id="results-section" class="hidden">
+        <div id="results-section" class="results-section hidden">
             <!-- Risk Score Card -->
-            <div id="risk-card" class="rounded-2xl p-8 mb-6 text-center">
-                <div class="text-6xl font-black mb-2" id="risk-percentage">0%</div>
-                <div class="text-lg font-semibold mb-4">Chance of AI Replacement</div>
-                <div class="text-xl font-bold" id="verdict"></div>
+            <div id="risk-card" class="risk-card">
+                <div class="risk-percentage" id="risk-percentage">0%</div>
+                <div class="risk-label">REPLACEMENT_PROBABILITY</div>
+                <div class="verdict" id="verdict"></div>
             </div>
 
             <!-- Why Section -->
-            <div class="glass rounded-2xl p-6 mb-4">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    ⚠️ Why AI Might Replace You
-                </h3>
-                <ul id="why-list" class="space-y-3">
-                </ul>
+            <div class="panel info-panel">
+                <div class="info-header warning">
+                    <span style="font-size: 20px;">⚠️</span>
+                    <span class="info-title">THREAT_ANALYSIS</span>
+                </div>
+                <div class="info-content">
+                    <ul id="why-list" class="info-list"></ul>
+                </div>
             </div>
 
             <!-- How to Survive Section -->
-            <div class="glass rounded-2xl p-6 mb-6">
-                <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
-                    🛡️ How to Survive
-                </h3>
-                <ul id="survive-list" class="space-y-3">
-                </ul>
+            <div class="panel info-panel">
+                <div class="info-header success">
+                    <span style="font-size: 20px;">🛡️</span>
+                    <span class="info-title">SURVIVAL_PROTOCOL</span>
+                </div>
+                <div class="info-content">
+                    <ul id="survive-list" class="info-list"></ul>
+                </div>
             </div>
 
-            <!-- Share Buttons -->
-            <div class="flex gap-3 mb-6">
-                <button onclick="shareResults()" class="flex-1 py-3 bg-white/20 rounded-lg font-semibold hover:bg-white/30 transition-all">
-                    📤 Share Results
+            <!-- Actions -->
+            <div class="actions">
+                <button onclick="shareResults()" class="btn">
+                    📤 TRANSMIT_RESULTS
                 </button>
-                <button onclick="resetForm()" class="flex-1 py-3 bg-white/10 rounded-lg font-semibold hover:bg-white/20 transition-all">
-                    🔄 Analyze Another
+                <button onclick="resetForm()" class="btn btn-secondary">
+                    🔄 NEW_SCAN
                 </button>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center text-white/50 text-sm">
-            <p>Built for fun. Results are AI-generated estimates, not career advice.</p>
-        </div>
+        <footer class="footer">
+            <p>BUILT_FOR_FUN // NOT_FINANCIAL_ADVICE</p>
+            <p style="margin-top: 5px;">v1.0.0 // SYSTEM_ONLINE</p>
+        </footer>
     </div>
 
     <script>
+        // Generate binary rain
+        function createBinaryRain() {
+            const container = document.getElementById('binaryRain');
+            const columns = Math.floor(window.innerWidth / 20);
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'binary-column';
+                column.style.left = (i * 20) + 'px';
+                column.style.animationDelay = (Math.random() * 10) + 's';
+                column.style.animationDuration = (5 + Math.random() * 10) + 's';
+                
+                let binary = '';
+                for (let j = 0; j < 50; j++) {
+                    binary += Math.random() > 0.5 ? '1' : '0';
+                    if (j % 5 === 4) binary += '\n';
+                }
+                column.textContent = binary;
+                container.appendChild(column);
+            }
+        }
+        
+        createBinaryRain();
+        
         async function analyzeProfile() {
             const url = document.getElementById('linkedinUrl').value.trim();
             
             if (!url || !url.includes('linkedin.com')) {
-                alert('Please enter a valid LinkedIn URL');
+                alert('ERROR: INVALID_LINKEDIN_URL\n\nPlease enter a valid LinkedIn profile URL');
                 return;
             }
 
@@ -192,7 +821,7 @@
 
                 showResults(data.analysis);
             } catch (error) {
-                alert(error.message || 'Failed to analyze. Try pasting your profile text instead.');
+                alert('ERROR: ' + (error.message || 'Scan failed. Try manual text input.'));
                 hideLoading();
             }
         }
@@ -201,7 +830,7 @@
             const text = document.getElementById('profileText').value.trim();
             
             if (!text || text.length < 50) {
-                alert('Please enter at least 50 characters of profile content');
+                alert('ERROR: INSUFFICIENT_DATA\n\nPlease enter at least 50 characters of profile content');
                 return;
             }
 
@@ -222,7 +851,7 @@
 
                 showResults(data.analysis);
             } catch (error) {
-                alert('Analysis failed. Please try again.');
+                alert('ERROR: Analysis failed. Please retry.');
                 hideLoading();
             }
         }
@@ -248,30 +877,30 @@
 
             // Set risk card color
             const riskCard = document.getElementById('risk-card');
-            riskCard.className = 'rounded-2xl p-8 mb-6 text-center ';
+            riskCard.className = 'risk-card ';
             if (analysis.riskPercentage >= 70) {
-                riskCard.classList.add('risk-high');
+                riskCard.classList.add('high');
             } else if (analysis.riskPercentage >= 40) {
-                riskCard.classList.add('risk-med');
+                riskCard.classList.add('medium');
             } else {
-                riskCard.classList.add('risk-low');
+                riskCard.classList.add('low');
             }
 
             // Fill why list
             const whyList = document.getElementById('why-list');
             whyList.innerHTML = analysis.whyAIWillReplace.map(item => 
-                `<li class="flex items-start gap-3">
-                    <span class="text-red-400 mt-1">▸</span>
-                    <span class="text-white/90">${item}</span>
+                `<li>
+                    <span class="bullet danger">▸</span>
+                    <span>${item}</span>
                 </li>`
             ).join('');
 
             // Fill survive list
             const surviveList = document.getElementById('survive-list');
             surviveList.innerHTML = analysis.howToSurvive.map(item => 
-                `<li class="flex items-start gap-3">
-                    <span class="text-green-400 mt-1">✓</span>
-                    <span class="text-white/90">${item}</span>
+                `<li>
+                    <span class="bullet success">✓</span>
+                    <span>${item}</span>
                 </li>`
             ).join('');
         }
@@ -286,7 +915,7 @@
         function shareResults() {
             const percentage = document.getElementById('risk-percentage').textContent;
             const verdict = document.getElementById('verdict').textContent;
-            const text = `My job has a ${percentage} chance of being replaced by AI. ${verdict} Find out yours: ${window.location.origin}`;
+            const text = `>> SYSTEM_ALERT: My job has a ${percentage} chance of AI replacement. ${verdict} Find out yours: ${window.location.origin}`;
             
             if (navigator.share) {
                 navigator.share({
@@ -295,8 +924,9 @@
                     url: window.location.origin
                 });
             } else {
-                navigator.clipboard.writeText(text);
-                alert('Results copied to clipboard!');
+                navigator.clipboard.writeText(text).then(() => {
+                    alert('>> RESULTS_COPIED_TO_CLIPBOARD');
+                });
             }
         }
 
