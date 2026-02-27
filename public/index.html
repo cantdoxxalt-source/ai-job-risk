@@ -693,16 +693,56 @@
                 <span class="panel-title">INPUT_TERMINAL_v1.0</span>
             </div>
             
+            <!-- PDF Upload - Primary Method -->
             <div class="input-group">
-                <label>> TARGET_LINKEDIN_URL</label>
+                <label>> UPLOAD_LINKEDIN_PDF</label>
+                
+                <!-- PDF Helper -->
+                <div class="copy-helper">
+                    <div class="copy-helper-title">
+                        <span>📄</span> HOW_TO_EXPORT_PDF
+                    </div>
+                    <ol class="copy-steps">
+                        <li>Go to your LinkedIn profile</li>
+                        <li>Click the <strong>3 dots (⋯)</strong> top right</li>
+                        <li>Select <strong>"Save to PDF"</strong></li>
+                        <li>Upload the PDF below</li>
+                    </ol>
+                    <button class="copy-btn" onclick="openLinkedIn()">>> OPEN_LINKEDIN_PROFILE</button>
+                </div>
+                
                 <input 
-                    type="url" 
-                    id="linkedinUrl" 
-                    placeholder="https://linkedin.com/in/your-profile"
+                    type="file" 
+                    id="pdfInput" 
+                    accept=".pdf"
+                    style="display: none;"
+                    onchange="handlePDFUpload(event)"
                 >
+                <div 
+                    id="pdfDropZone"
+                    onclick="document.getElementById('pdfInput').click()"
+                    style="
+                        border: 2px dashed rgba(0, 245, 255, 0.3);
+                        border-radius: 4px;
+                        padding: 30px;
+                        text-align: center;
+                        cursor: pointer;
+                        background: rgba(0, 0, 0, 0.3);
+                        transition: all 0.3s;
+                        font-family: 'Share Tech Mono', monospace;
+                        font-size: 14px;
+                        color: rgba(0, 245, 255, 0.6);
+                    "
+                    ondragover="event.preventDefault(); this.style.borderColor='var(--neon-cyan)'; this.style.background='rgba(0, 245, 255, 0.05)';"
+                    ondragleave="this.style.borderColor='rgba(0, 245, 255, 0.3)'; this.style.background='rgba(0, 0, 0, 0.3)';"
+                    ondrop="event.preventDefault(); handlePDFDrop(event);"
+                >
+                    <div style="font-size: 40px; margin-bottom: 10px;">📄</div>
+                    <div id="pdfFileName">CLICK_TO_UPLOAD_OR_DROP_PDF</div>
+                </div>
             </div>
             
-            <button onclick="analyzeProfile()" class="btn btn-primary">
+            <button onclick="analyzePDF()" class="btn btn-primary" id="pdfAnalyzeBtn" disabled>
                 ⚡ INITIATE_SCAN
             </button>
             
@@ -711,25 +751,11 @@
             </div>
             
             <div class="input-group">
-                <label>> RAW_PROFILE_DATA</label>
-                
-                <!-- Copy Helper -->
-                <div class="copy-helper">
-                    <div class="copy-helper-title">
-                        <span>📋</span> HOW_TO_EXTRACT_DATA
-                    </div>
-                    <ol class="copy-steps">
-                        <li>Open your LinkedIn profile</li>
-                        <li>Select your Headline + About + Experience</li>
-                        <li>Press Ctrl+C (or Cmd+C on Mac)</li>
-                        <li>Paste below and click ANALYZE_TEXT</li>
-                    </ol>
-                    <button class="copy-btn" onclick="openLinkedIn()">>> OPEN_LINKEDIN_PROFILE</button>
-                </div>
-                
+                <label>> DESCRIBE_YOUR_JOB (3_SENTENCES)</label>
                 <textarea 
                     id="profileText" 
-                    placeholder="Paste headline, about section, or job descriptions here..."
+                    placeholder="Example: I'm a Senior Marketing Manager at TechCorp. I create campaigns, manage a team of 5, and analyze performance metrics. I've been doing this for 8 years."
+                    rows="3"
                 ></textarea>
             </div>
             
@@ -889,6 +915,71 @@
             window.open('https://www.linkedin.com/me/', '_blank');
         }
 
+        // PDF handling
+        let currentPDFBase64 = null;
+
+        function handlePDFUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                processPDFFile(file);
+            }
+        }
+
+        function handlePDFDrop(event) {
+            const file = event.dataTransfer.files[0];
+            if (file && file.type === 'application/pdf') {
+                processPDFFile(file);
+            } else {
+                alert('ERROR: INVALID_FILE_TYPE\n\nPlease upload a PDF file');
+            }
+        }
+
+        function processPDFFile(file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('ERROR: FILE_TOO_LARGE\n\nPDF must be under 10MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64 = e.target.result.split(',')[1];
+                currentPDFBase64 = base64;
+                document.getElementById('pdfFileName').textContent = '>> ' + file.name + ' [READY]';
+                document.getElementById('pdfFileName').style.color = 'var(--neon-green)';
+                document.getElementById('pdfAnalyzeBtn').disabled = false;
+                document.getElementById('pdfDropZone').style.borderColor = 'var(--neon-green)';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function analyzePDF() {
+            if (!currentPDFBase64) {
+                alert('ERROR: NO_PDF_UPLOADED\n\nPlease upload a PDF first');
+                return;
+            }
+
+            showLoading();
+
+            try {
+                const response = await fetch('/api/analyze-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pdfBase64: currentPDFBase64 })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'PDF analysis failed');
+                }
+
+                showResults(data.analysis);
+            } catch (error) {
+                alert('ERROR: ' + (error.message || 'PDF analysis failed. Try text input instead.'));
+                hideLoading();
+            }
+        }
+
         function showLoading() {
             document.getElementById('input-section').classList.add('hidden');
             document.getElementById('loading-section').classList.remove('hidden');
@@ -941,8 +1032,15 @@
         function resetForm() {
             document.getElementById('results-section').classList.add('hidden');
             document.getElementById('input-section').classList.remove('hidden');
-            document.getElementById('linkedinUrl').value = '';
             document.getElementById('profileText').value = '';
+            
+            // Reset PDF state
+            currentPDFBase64 = null;
+            document.getElementById('pdfInput').value = '';
+            document.getElementById('pdfFileName').textContent = 'CLICK_TO_UPLOAD_OR_DROP_PDF';
+            document.getElementById('pdfFileName').style.color = 'rgba(0, 245, 255, 0.6)';
+            document.getElementById('pdfAnalyzeBtn').disabled = true;
+            document.getElementById('pdfDropZone').style.borderColor = 'rgba(0, 245, 255, 0.3)';
         }
 
         function shareResults() {
@@ -963,9 +1061,9 @@
             }
         }
 
-        // Allow Enter key to submit
-        document.getElementById('linkedinUrl').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') analyzeProfile();
+        // Allow Ctrl+Enter to submit text
+        document.getElementById('profileText').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.ctrlKey) analyzeText();
         });
     </script>
 </body>

@@ -4,12 +4,14 @@ const cors = require('cors');
 const axios = require('axios');
 const cheerio = require('cheerio');
 const path = require('path');
+const pdfParse = require('pdf-parse');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(express.static('public'));
 
 // LinkedIn profile scraper
@@ -397,6 +399,54 @@ app.post('/api/analyze-text', async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: 'Analysis failed', message: error.message });
+  }
+});
+
+// PDF analysis endpoint
+app.post('/api/analyze-pdf', async (req, res) => {
+  const { pdfBase64, name = 'You' } = req.body;
+  
+  if (!pdfBase64) {
+    return res.status(400).json({ error: 'Please upload a PDF file' });
+  }
+  
+  try {
+    // Decode base64 to buffer
+    const pdfBuffer = Buffer.from(pdfBase64, 'base64');
+    
+    // Parse PDF
+    const pdfData = await pdfParse(pdfBuffer);
+    const extractedText = pdfData.text;
+    
+    if (!extractedText || extractedText.length < 50) {
+      return res.status(400).json({ error: 'Could not extract enough text from PDF. Try uploading a different file.' });
+    }
+    
+    const profileData = {
+      name,
+      headline: extractedText.split('\n')[0].substring(0, 100),
+      about: extractedText,
+      experience: [],
+      url: 'pdf-upload'
+    };
+    
+    const analysis = await analyzeRisk(profileData);
+    
+    // Track analytics
+    trackAnalysis(analysis.riskPercentage);
+    
+    res.json({
+      success: true,
+      profile: { name, headline: profileData.headline },
+      analysis,
+      extractedLength: extractedText.length
+    });
+  } catch (error) {
+    console.error('PDF parsing error:', error);
+    res.status(500).json({ 
+      error: 'Failed to parse PDF',
+      message: error.message 
+    });
   }
 });
 
